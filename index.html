@@ -810,6 +810,18 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
 .pin.native .htrack { overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; padding-right: 24px; transform: none !important; scrollbar-width: none; }
 .pin.native .htrack::-webkit-scrollbar { display: none; }
 .pin.native .card { scroll-snap-align: start; }
+/* phones: projects stack vertically, full width; the pager rides along at the top and each card tilts and parallaxes as it crosses the screen */
+.pin.stack .htrack { flex-direction: column; overflow: visible; scroll-snap-type: none; gap: 22px; padding: 0 16px 8px; }
+.pin.stack .card { width: 100%; scroll-snap-align: none; }
+.pin.stack .card.dim { opacity: 1; transform: none; }
+.pin.stack .card-in { transform: perspective(1100px) rotateX(calc(var(--sy, 0) * 7deg)) scale(calc(1 - var(--sa, 0) * .035)); transition: border-color .3s; will-change: transform; }
+.pin.stack .card.act .card-in { border-color: rgba(124, 198, 255, .55); box-shadow: 0 0 0 1px rgba(124, 198, 255, .12), 0 26px 50px -30px rgba(124, 198, 255, .45); }
+.pin.stack .pj-img { inset: -9% 0; transform: translate3d(0, calc(var(--sy, 0) * -7%), 0); transition: none; }
+.pin.stack .pin-stage > .wrap { position: sticky; top: 68px; z-index: 5; margin-bottom: 18px; padding-top: 12px; padding-bottom: 12px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.pin.stack .pager { margin: 0; }
+.pin.stack .pin-stage { overflow: visible; }
+.pin.stack .card.rv-card { transition-delay: 0s; }
+@media (prefers-reduced-motion: reduce) { .pin.stack .card-in, .pin.stack .pj-img { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01s !important; }
 }
@@ -4621,12 +4633,30 @@ html.fsv-open .cs-sc { overflow: hidden; }
     $('pbar').style.setProperty('--pp', (i + 1) / P.length);
     tick(900 + i * 90);
   }
+  let stacked = false;
   function layoutPin() {
     pinned = innerWidth > 1000 && fine && !reduce;
-    pin.classList.toggle('native', !pinned);
+    stacked = innerWidth <= 760;
+    pin.classList.toggle('native', !pinned); pin.classList.toggle('stack', stacked);
+    if (!stacked) cards.forEach(c => { c.classList.remove('act'); c.style.removeProperty('--sy'); c.style.removeProperty('--sa'); });
     if (pinned) pin.style.height = (innerHeight - 68 + Math.max(0, htrack.scrollWidth - innerWidth * .7)) + 'px';
     else { pin.style.height = ''; htrack.style.transform = ''; }
   }
+  // stacked (phone) layout: the card nearest the middle of the screen is the active one; every card tilts by its distance from the middle
+  function onStackScroll() {
+    if (!stacked) return;
+    const mid = innerHeight * .55; let best = -1, bd = 1e9;
+    cards.forEach((c, k) => {
+      const r = c.getBoundingClientRect(); if (r.bottom < -200 || r.top > innerHeight + 200) return;
+      const d = (r.top + r.height / 2 - mid) / innerHeight, cl = Math.max(-1, Math.min(1, d));
+      if (!reduce) { c.style.setProperty('--sy', cl.toFixed(3)); c.style.setProperty('--sa', Math.abs(cl).toFixed(3)); }
+      if (Math.abs(d) < bd) { bd = Math.abs(d); best = k; }
+    });
+    if (best < 0) return;
+    cards.forEach((c, k) => c.classList.toggle('act', k === best));
+    setActive(best);
+  }
+  addEventListener('scroll', () => { if (stacked) requestAnimationFrame(onStackScroll); }, { passive: true });
   function onPinScroll() {
     if (!pinned) return;
     const r = pin.getBoundingClientRect(), total = pin.offsetHeight - (innerHeight - 68);
@@ -4635,7 +4665,7 @@ html.fsv-open .cs-sc { overflow: hidden; }
     setActive(Math.min(P.length - 1, Math.round(k * (P.length - 1))));
   }
   htrack.addEventListener('scroll', () => { if (!pinned) setActive(Math.min(P.length - 1, Math.round(htrack.scrollLeft / (cards[0].offsetWidth + 24)))); }, { passive: true });
-  layoutPin(); addEventListener('resize', () => { layoutPin(); onPinScroll(); });
+  layoutPin(); onStackScroll(); addEventListener('resize', () => { layoutPin(); onPinScroll(); onStackScroll(); });
 
   /* ---------- Tools: zero-g bay (drag, throw, collide) ---------- */
   const TOOLS = [['Interface', 'Figma'], ['Visual', 'Illustrator'], ['Visual', 'Photoshop'], ['AI', 'ChatGPT'], ['AI', 'Claude AI'], ['Build', 'HTML'], ['Build', 'CSS']];
