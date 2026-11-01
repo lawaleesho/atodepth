@@ -2241,7 +2241,10 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
 @property --svA { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 #services { overflow: hidden; isolation: isolate; padding-bottom: 120px; }
 .svs-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.svs-bg .floor { position: absolute; left: -40%; right: -40%; bottom: -10%; height: 70%; transform-origin: 50% 0; transform: perspective(600px) rotateX(64deg);
+/* crash fix: at 70% of a tall section the tilted floor's near edge swung up to 1200px toward the viewer, past the 600px
+   perspective, i.e. behind the camera. Safari can't size a layer like that and kills the tab (the 'reload' on What I do).
+   Capped so the near edge stays in front of the camera (520px tilts to ~470px); same look. */
+.svs-bg .floor { position: absolute; left: -40%; right: -40%; top: 40%; height: min(70%, 520px); transform-origin: 50% 0; transform: perspective(600px) rotateX(64deg);
   background-image: linear-gradient(rgba(124,198,255,.20) 1px, transparent 1px), linear-gradient(90deg, rgba(124,198,255,.20) 1px, transparent 1px); background-size: 64px 64px;
   -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); animation: svFloor 4s linear infinite; }
 @keyframes svFloor { to { background-position: 0 64px; } }
