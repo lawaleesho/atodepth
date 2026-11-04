@@ -261,7 +261,9 @@ h1.head .ln:nth-child(2) { transform: translate3d(calc(var(--lx, 0px) * -1.6), c
 .status i { width: 7px; height: 7px; background: var(--ice); box-shadow: 0 0 10px var(--ice); animation: blink 1.4s steps(1) infinite; }
 .nick { margin-top: 44px; font: 500 clamp(13px, 1.4vw, 17px) var(--mono); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); display: flex; gap: 16px; align-items: center; }
 .nick b { font-weight: 500; color: var(--fg); }
-.nick .caret { width: .6em; height: 1.1em; background: var(--ice); animation: blink 1s steps(1) infinite; }
+.nick b { line-height: 1.75; min-width: 0; }
+.nick .seg { white-space: nowrap; }
+.nick .caret { display: inline-block; vertical-align: -.2em; margin-left: .7em; width: .6em; height: 1.1em; background: var(--ice); animation: blink 1s steps(1) infinite; }
 @media (max-width: 640px) { .nick { font-size: 11px; letter-spacing: .2em; gap: 10px; } }
 h1.head { margin: 22px 0 0; font: 800 clamp(34px, 4.7vw, 76px)/.95 var(--display); letter-spacing: .005em; text-transform: uppercase; }
 h1.head .ln { display: block; overflow: hidden; padding: .22em .06em .22em; margin: -.22em -.06em -.22em; }
@@ -3155,7 +3157,7 @@ html.fsv-open .cs-sc { overflow: hidden; }
       <div class="frame">
         <span class="c tl"></span><span class="c br"></span>
         <div class="status sys"><i></i>Now.online <span style="color:var(--dim)">/</span> Lagos <span id="heroClock" style="color:var(--fg)">--:--</span></div>
-        <div class="nick"><span>«</span><b>Product design / Strategy / Systems</b><span class="caret"></span></div>
+        <div class="nick"><span>«</span><b><span class="seg">Product design /</span> <span class="seg">Strategy /</span> <span class="seg">AI-powered developer<span class="caret"></span></span></b></div>
         <h1 class="head" aria-label="Turning complexity into clarity.">
           <span class="ln"><span>Turning <span class="cx" id="cx">complexity</span></span></span>
           <span class="ln"><span class="outline" id="outline" data-text="into clarity.">into clarity.</span></span>
