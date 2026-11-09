@@ -415,6 +415,37 @@ section { position: relative; z-index: 1; padding-block: 130px 20px; scroll-marg
 /* private projects: a passcode tag on the cover, and a passcode panel before the case study opens */
 .pj-lock { position: absolute; right: 14px; top: 14px; z-index: 3; display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(124, 198, 255, .55); background: rgba(6, 10, 18, .8); color: #cfe9ff; font: 500 10.5px/1.3 var(--mono); letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; }
 .pj-lock svg { width: 12px; height: 12px; flex: none; }
+/* tool chip on project covers: which tools the project was made with */
+.pj-tools { position: absolute; left: 14px; bottom: 14px; z-index: 3; display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border: 1px solid rgba(124, 198, 255, .45); background: rgba(6, 10, 18, .82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); overflow: hidden; pointer-events: none; max-width: calc(100% - 28px); }
+.pj-tools .pt-tiles { display: inline-flex; gap: 5px; flex: none; perspective: 300px; }
+.tli { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border: 1px solid rgba(124, 198, 255, .28); background: linear-gradient(160deg, rgba(20, 30, 52, .95), rgba(8, 12, 22, .95)); font-style: normal; transform-origin: 50% 50%; }
+.tli svg { width: 15px; height: 15px; overflow: visible; }
+.tli-figma svg { width: 11px; height: 16px; }
+.tli-figma path { transition: transform .5s cubic-bezier(.16, 1, .3, 1); }
+.tli-claude .cl-r { transform-origin: 12px 12px; transform-box: view-box; }
+.pj-tools .pt-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; font: 500 9.5px/1.25 var(--mono); letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; }
+.pj-tools .pt-txt em { font-style: normal; color: rgba(207, 233, 255, .6); }
+.pj-tools .pt-txt b { font-weight: 600; color: #eaf3ff; letter-spacing: .16em; }
+.pj-tools .pt-sw { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(124, 198, 255, .28) 50%, transparent 70%); transform: translateX(-120%); }
+.pj-tools::before, .pj-tools::after { content: ""; position: absolute; width: 6px; height: 6px; border: 1px solid var(--ice, #7cc6ff); }
+.pj-tools::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
+.pj-tools::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .card:not(.dim) .pj-tools .tli, .card:hover .pj-tools .tli { animation: tkFlip .9s cubic-bezier(.16, 1, .3, 1) both; animation-delay: calc(var(--j) * .14s + .15s); }
+  .card:not(.dim) .pj-tools .pt-sw, .card:hover .pj-tools .pt-sw { animation: ptSweep 3.6s cubic-bezier(.45, 0, .2, 1) .5s infinite; }
+  .card:hover .tli-figma .f1 { transform: translate(-3px, -3px); } .card:hover .tli-figma .f2 { transform: translate(3px, -3px); }
+  .card:hover .tli-figma .f3 { transform: translate(-4px, 0); } .card:hover .tli-figma .f4 { transform: translate(4px, 0); } .card:hover .tli-figma .f5 { transform: translate(-3px, 3px); }
+  .card:not(.dim) .tli-claude .cl-r, .card:hover .tli-claude .cl-r { animation: clSpin 9s linear infinite, clPulse 2.4s ease-in-out infinite; }
+}
+@keyframes tkFlip { 0% { transform: rotateY(-180deg) scale(.6); } 60% { transform: rotateY(12deg) scale(1.08); } 100% { transform: none; } }
+@keyframes ptSweep { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+@keyframes clSpin { to { rotate: 360deg; } }
+@keyframes clPulse { 0%, 100% { scale: 1; } 50% { scale: 1.14; } }
+@media (max-width: 420px) { .pj-tools { left: 10px; bottom: 10px; gap: 8px; padding: 5px 10px 5px 5px; } .tli { width: 24px; height: 24px; } .pj-tools .pt-txt { font-size: 8.5px; letter-spacing: .14em; } }
+/* tools row in case-study covers */
+.dk-facts dd.dk-tools { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.dk-tools .dt-t { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.dk-tools .tli { width: 26px; height: 26px; }
 .pc { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 16px; }
 .pc[hidden] { display: none; }
 .pc-bd { position: absolute; inset: 0; background: rgba(5, 8, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); animation: pcBd .4s ease both; }
@@ -3992,6 +4023,15 @@ html.fsv-open .cs-sc { overflow: hidden; }
   })();
 
   const LOCK_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><path d="M12 14.5v3"/></svg>';
+
+  /* tools each project was made with: every project carries Figma; N28 was also built with Claude */
+  const TOOL_IC = { figma: '<svg viewBox="0 0 38 57" aria-hidden="true"><path class="f1" fill="#F24E1E" d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z"/><path class="f2" fill="#FF7262" d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z"/><path class="f3" fill="#A259FF" d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z"/><path class="f4" fill="#1ABCFE" d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z"/><path class="f5" fill="#0ACF83" d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z"/></svg>', claude: '<svg viewBox="0 0 24 24" aria-hidden="true"><g class="cl-r"><path fill="#D97757" stroke="#D97757" stroke-width=".9" stroke-linejoin="round" d="M13.25 10.80 L12.55 1.40 L11.45 1.40 L10.75 10.80Z M13.72 11.79 L17.34 5.76 L16.46 5.10 L11.72 10.29Z M13.61 12.64 L21.51 8.26 L21.05 7.26 L12.57 10.36Z M12.91 13.48 L19.12 14.10 L19.35 13.02 L13.44 11.03Z M12.09 13.73 L19.80 19.49 L20.52 18.66 L13.73 11.84Z M11.04 13.44 L13.30 20.52 L14.38 20.28 L13.48 12.90Z M10.46 12.80 L8.77 21.06 L9.82 21.37 L12.86 13.50Z M10.29 11.72 L5.43 16.24 L6.09 17.12 L11.79 13.72Z M10.63 10.93 L1.63 12.94 L1.78 14.02 L10.99 13.41Z M11.54 10.33 L5.24 7.69 L4.71 8.66 L10.35 12.52Z M12.40 10.31 L7.11 3.37 L6.18 3.97 L10.30 11.67Z"/></g></svg>' };
+  const TOOL_NM = { figma: 'Figma', claude: 'Claude' };
+  const pTools = p => p.tools || ['figma'];
+  const toolsLbl = p => pTools(p).length > 1 ? 'Designed & built' : 'Designed in';
+  const toolsSay = p => pTools(p).length > 1 ? 'Designed in Figma and built with Claude' : 'Designed in Figma';
+  const toolTiles = p => pTools(p).map((t, j) => `<i class="tli tli-${t}" style="--j:${j}">${TOOL_IC[t]}</i>`).join('');
+  const toolsChip = p => `<span class="pj-tools" role="img" aria-label="${toolsSay(p)}"><span class="pt-tiles">${toolTiles(p)}</span><span class="pt-txt"><em>${toolsLbl(p)}</em><b>${pTools(p).map(t => TOOL_NM[t]).join(' + ')}</b></span><span class="pt-sw"></span></span>`;
   /* ---------- Projects ---------- */
   const P = [
     {"name": "Vale Personal Banking", "lock": true, "cover": "covers/vp-cover.webp", "lines": ["Vale Personal", "Banking"], "sub": "", "desc": "Led the redesign of the personal banking experience across web and mobile, from research and information architecture to final UI.", "tags": ["Web & mobile", "Lead designer"], "glyph": "VP", "g": ["#1d3a6b", "#7cc6ff"], "traits": {"Platform": "Web & mobile", "Role": "Lead designer", "Industry": "Personal banking"}, "link": "https://my-portfolio-nine-azure-84.vercel.app/vale-personal-banking.html"},
@@ -3999,7 +4039,7 @@ html.fsv-open .cs-sc { overflow: hidden; }
     {"name": "Vale Website", "cover": "covers/vw-cover.webp", "lines": ["Vale", "Website"], "sub": "Marketing website", "desc": "Designed the public website for Vale, telling the story of personal and business banking that truly pays you, with clear paths for new customers to get started.", "tags": ["Website", "Fintech"], "glyph": "VW", "g": ["#14306a", "#4f8dff"], "traits": {"Platform": "Website", "Industry": "Fintech"}, "link": "https://vale.ng", "live": true},
     {"name": "Green Africa", "cover": "covers/ga-cover.webp", "lines": ["Green Africa"], "sub": "Flight booking engine", "desc": "Simplified the flight booking journey through clearer information architecture, streamlined flows and a more focused checkout experience.", "tags": ["Web booking engine", "Product design"], "glyph": "GA", "g": ["#123a2a", "#7ee0a8"], "traits": {"Platform": "Web booking engine", "Focus": "Product design", "Industry": "Aviation"}, "link": "https://www.greenafrica.com", "live": true},
     {"name": "TAD Finance", "cover": "covers/tad-cover.webp", "lines": ["TAD Finance"], "sub": "", "desc": "Designed connected financial experiences across website, web application and mobile, bringing clarity to key customer journeys.", "tags": ["Web & mobile", "Fintech"], "glyph": "TF", "g": ["#2a2350", "#9aa8ff"], "traits": {"Platform": "Website, web app & mobile", "Industry": "Fintech"}, "link": "https://tadfinance.com", "live": true},
-    {"name": "N28 Centerpoint", "cover": "covers/n28-cover.webp", "lines": ["N28 Centerpoint"], "sub": "Digital infrastructure", "desc": "N28 Centerpoint is developing managed digital infrastructure and enterprise connectivity for organisations operating in Nigeria. We bring hosting, protection, operations and network requirements into a coordinated service design.", "tags": ["Service design", "Enterprise connectivity"], "glyph": "N28", "g": ["#1b2a4a", "#8fb8ff"], "traits": {"Focus": "Service design", "Industry": "Digital infrastructure"}, "link": "https://n28centerpoint.com", "live": true},
+    {"name": "N28 Centerpoint", "cover": "covers/n28-cover.webp", "lines": ["N28 Centerpoint"], "sub": "Digital infrastructure", "desc": "N28 Centerpoint is developing managed digital infrastructure and enterprise connectivity for organisations operating in Nigeria. We bring hosting, protection, operations and network requirements into a coordinated service design.", "tags": ["Service design", "Enterprise connectivity"], "glyph": "N28", "g": ["#1b2a4a", "#8fb8ff"], "traits": {"Focus": "Service design", "Industry": "Digital infrastructure"}, "link": "https://n28centerpoint.com", "live": true, "tools": ["figma", "claude"]},
     {"name": "Travel Explorer", "cover": "covers/te-cover.webp", "lines": ["Travel Explorer"], "sub": "Flight & hotel booking", "desc": "Designed a seamless web booking experience for discovering, comparing and booking flights and hotels.", "tags": ["Web booking engine", "Product design"], "glyph": "TE", "g": ["#16324a", "#6fd3ff"], "traits": {"Platform": "Web booking engine", "Focus": "Product design", "Industry": "Travel"}, "link": "https://www.figma.com/proto/rL9vjIgEohPkEHqZVEWx5F/My-Portfolio--New-?node-id=443-14628&viewport=1522%2C256%2C0.1&t=fQ6uAPt4grb9amwy-1&scaling=scale-down-width&content-scaling=fixed&starting-point-node-id=443%3A14628&show-proto-sidebar=1&page-id=411%3A4292", "live": true, "bento": "te"},
     {"name": "Jaiz Bank", "soon": true, "lines": ["Jaiz Bank"], "sub": "Digital banking", "desc": "Modernised personal and business banking across web and mobile, simplifying complex journeys and creating a more consistent digital experience.", "tags": ["Web & mobile", "Banking UX"], "glyph": "JB", "g": ["#123a3a", "#7ee0c0"], "traits": {"Platform": "Web & mobile", "Focus": "Banking UX", "Industry": "Personal & business banking"}}
   ];
@@ -4620,7 +4660,7 @@ html.fsv-open .cs-sc { overflow: hidden; }
     const el = document.createElement('div'); el.className = 'card' + (i ? ' dim' : '') + (p.soon ? ' soon' : '');
     const id = String(i + 1).padStart(3, '0');
     el.innerHTML = `<button type="button"><div class="card-in"><span class="c tl"></span><span class="c br"></span>
-      <div class="art pj-cover${p.locked ? ' locked' : ''}"><span class="pj-img"></span><span class="tid">#${id}</span><span class="sys pj-cl">${p.cover || p.soon ? '' : 'Cover // 16:9'}</span>${p.lock ? `<span class="pj-lock">${LOCK_IC}Private</span>` : ''}${p.soon ? '<span class="pj-soon"><i></i>Coming soon</span>' : ''}<span class="foil"></span></div>
+      <div class="art pj-cover${p.locked ? ' locked' : ''}"><span class="pj-img"></span><span class="tid">#${id}</span><span class="sys pj-cl">${p.cover || p.soon ? '' : 'Cover // 16:9'}</span>${p.lock ? `<span class="pj-lock">${LOCK_IC}Private</span>` : ''}${p.soon ? '<span class="pj-soon"><i></i>Coming soon</span>' : ''}${toolsChip(p)}<span class="foil"></span></div>
       <div class="pj-i"><div class="pj-l"><h3></h3>${p.sub ? '<span class="sys pj-sub"></span>' : ''}<span class="pj-dash"></span><div class="pj-tags">${p.tags.map((t, j) => `<span class="${j === p.tags.length - 1 ? 'hi' : ''}">${t}</span>`).join('')}</div></div><p class="pj-p"></p></div>
     </div></button>`;
     const h = el.querySelector('h3'); (p.lines || [p.name]).forEach((t, k) => { if (k) h.appendChild(document.createElement('br')); h.append(t); });
@@ -4629,7 +4669,7 @@ html.fsv-open .cs-sc { overflow: hidden; }
     if (!p.locked) el.querySelector('.art').style.setProperty('--g', grad(p));
     if (p.cover) el.querySelector('.pj-img').style.backgroundImage = `url("${p.cover}")`;
     if (p.anim) { const pi = el.querySelector('.pj-img'); pi.innerHTML = dvCover(p.anim); el.querySelector('.art').classList.add('has-anim'); requestAnimationFrame(() => dvRun(pi.firstElementChild, p.anim)); }
-    el.querySelector('button').setAttribute('aria-label', `${p.name}, ${p.soon ? 'coming soon' : (p.lock ? 'private, passcode required, ' : '') + (CS[i] ? 'open case study' : 'details')}`);
+    el.querySelector('button').setAttribute('aria-label', `${p.name}, ${toolsSay(p)}, ${p.soon ? 'coming soon' : (p.lock ? 'private, passcode required, ' : '') + (CS[i] ? 'open case study' : 'details')}`);
     if (p.soon) el.querySelector('button').setAttribute('aria-disabled', 'true');
     const inner = el.querySelector('.card-in'), foil = el.querySelector('.foil');
     if (!reduce && fine) {
@@ -5735,6 +5775,7 @@ html.fsv-open .cs-sc { overflow: hidden; }
   };
   function csHTML(i) {
     csSlides = CS[i].bento && !CS[i].dz ? deckTE(i) : CS[i].live ? deckLive(i) : VX[i] ? deckVX(i) : deck(i);
+    if (csSlides[0] && /<\/dl>/.test(csSlides[0].html)) { const tp = P[i]; csSlides[0].html = csSlides[0].html.replace('</dl>', `<div class="dkr" style="--d:4.4"><span><dt>Tools</dt><dd class="dk-tools" aria-label="${toolsSay(tp)}">${pTools(tp).map((t, j) => `<span class="dt-t"><i class="tli tli-${t}" style="--j:${j}">${TOOL_IC[t]}</i>${TOOL_NM[t]}</span>`).join('')}</dd></span></div></dl>`); }
     return csSlides.map((s, k) => `<section class="dk-s t-${s.theme} ${s.cls}" id="dk-${k}" data-k="${k}" aria-label="Slide ${k + 1}${s.nav ? ': ' + esc(s.nav) : ''}">${bgHTML(s, k)}${k ? '' : '<canvas class="dk-fx" aria-hidden="true"></canvas><span class="diag a"></span><span class="diag b"></span><div class="h-ret dk-ret" aria-hidden="true"><i></i><i></i><i></i><i></i><span class="sys rt">X 0000 · Y 0000</span><span class="sys rc">Clarity <b>00%</b></span></div>'}<i class="dk-edge" aria-hidden="true" data-n="${pad(k + 1)} // ${esc((s.nav || 'Decision').toUpperCase())}"></i><div class="dk-in">${s.html}</div><footer class="dk-foot"><div class="sys"><span>© 2026 Toheeb Abdullahi</span><span>${k === csSlides.length - 1 ? 'Lagos <span class="dk-clock">--:--:--</span> WAT' : `${pad(k + 1)} / ${pad(csSlides.length)}`}</span></div></footer></section>`).join('');
   }
   // back-to-top for long case studies: shows once the reader is well into the page, its edge fills with reading progress
